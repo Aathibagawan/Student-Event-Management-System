@@ -21,6 +21,33 @@ https://student-event-management-system-1.onrender.com/api/docs/
 https://github.com/Aathibagawan/Student-Event-Management-System
 
 ---
+## Demo Credentials
+
+### Admin
+
+Email:
+admin@ace.local
+
+Password:
+Demo@12345
+
+### Volunteer
+
+Email:
+volunteer1@ace.local
+
+Password:
+Demo@12345
+
+### Student
+
+Email:
+student1@ace.local
+
+Password:
+Demo@12345
+
+---
 
 # 🏗️ System Architecture
 
