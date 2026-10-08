@@ -1,0 +1,24 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.sqlite3
+backend/media/
+backend/staticfiles/
+
+# Node
+node_modules/
+build/
+dist/
+
+# Secrets - never commit
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
