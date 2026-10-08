@@ -1,336 +1,774 @@
-# ACE Events — Event & Symposium Management Platform
+# ACE Event & Symposium Management System
 
-A full-stack web app for running college events, symposiums and workshops: event creation, student registration with
-unique QR codes, volunteer check-in, attendance tracking and budget/expense management.
+A full-stack web application for managing college events, symposiums, student registrations, volunteers, attendance, budgets, and expenses.
 
-**Stack:** React (Vite) · Django · Django REST Framework · MySQL · JWT (SimpleJWT) · `qrcode`
-
----
-
-## ⚠️ Verification status (read this first)
-
-This project was generated in a sandbox **without internet access**, so Django, DRF, MySQL and npm packages could
-**not be installed or run** there. What *was* verified:
-
-| Check | Status |
-|---|---|
-| Every Python file compiles (`py_compile`) | ✅ verified |
-| Every JS/JSX file parses; all relative imports resolve | ✅ verified |
-| `pip install`, `makemigrations`, `migrate`, `seed_data`, `runserver` | ❌ **not run** – you must run them |
-| Backend tests (`python manage.py test`) | ❌ **not run** |
-| `npm install`, `npm run dev`, `npm test`, `npm run build` | ❌ **not run** |
-| Frontend ↔ backend calls, QR scan with a real camera, MySQL connection | ❌ **not run** |
-| Email via real SMTP | ❌ not run (console backend is the default) |
-
-**Migrations are not pre-generated.** Run `python manage.py makemigrations accounts events registrations budgets`
-once (step 4 below) — it creates them against *your* Django version. Commit the generated `migrations/` folders afterwards.
-If something fails on first run, see [Troubleshooting](#troubleshooting); fixing small issues is part of the learning.
+The system is built using **React.js**, **Django REST Framework**, **Python**, and **MySQL**, with JWT-based authentication and role-based access control.
 
 ---
 
-## 1. Project overview
+## 🚀 Live Demo
 
-Colleges usually run symposiums with spreadsheets, WhatsApp groups and paper attendance sheets. That causes duplicate
-registrations, no seat limits, queues at the gate and untracked spending. ACE Events replaces this with one system:
+### Frontend
+https://student-event-management-system-a8jre3s3u-cojective.vercel.app
 
-* **Admin** creates events, assigns volunteers, tracks budgets and sees dashboard statistics.
-* **Student** registers online and receives a unique registration ID + QR code (and an email).
-* **Volunteer** scans the QR at the entrance; attendance is recorded once per student.
+### Backend API
+https://student-event-management-system-1.onrender.com
 
-## 2. Features
+### API Documentation
+https://student-event-management-system-1.onrender.com/api/docs/
 
-* JWT login/register, refresh tokens, role-based permissions enforced **on the server** (admin / student / volunteer)
-* Event CRUD with search + filters (title, type, status, date)
-* Student registration with: duplicate prevention, deadline check, capacity check, status check, unique ID `ACE-2026-00001`
-* QR generation (PNG) per registration, viewable/downloadable by the student
-* QR check-in (camera scanner or manual ID), duplicate check-in blocked, records `check_in_time` and `checked_in_by`
-* Volunteer management and event assignment
-* Budgets and expenses with `Decimal` money; auto total / remaining / utilization %; spending cannot exceed budget
-* Three role-specific dashboards (cards + simple bar charts)
-* Confirmation email (console backend in dev, SMTP in production via env variables)
-* Swagger/OpenAPI docs at `/api/docs/`, demo data command, tests for the core rules
+### GitHub
+https://github.com/Aathibagawan/Student-Event-Management-System
 
-**Not implemented / optional future work** (deliberately left out, nothing is faked): refresh-token blacklisting on
-logout, student self-cancellation, payment gateway for fees (fee is stored/displayed only), pagination UI in React
-(API supports `page`/`page_size`; the UI loads up to 200 rows), frontend end-to-end tests.
+---
 
-## 3. Technology stack — why each piece
+# 🏗️ System Architecture
 
-| Tech | Why |
-|---|---|
-| React + Vite | Component-based UI, fast dev server and build; React Router for pages |
-| Axios | Interceptors attach the JWT and silently refresh it on 401 |
-| Django | Batteries included: ORM, auth, admin, migrations, security defaults |
-| Django REST Framework | Serializers (validation), viewsets/routers, permissions, browsable API |
-| SimpleJWT | Stateless token authentication that works well with a separate React app |
-| MySQL + Django ORM | Relational data with foreign keys and constraints; ORM avoids hand-written SQL |
-| `qrcode` + Pillow | Generates PNG QR codes in Python |
-| `html5-qrcode` | Stable browser camera QR scanner |
-| drf-spectacular | Auto-generated OpenAPI/Swagger docs |
-| WhiteNoise + Gunicorn | Static files + production WSGI server |
-
-## 4. Architecture
+The application follows a client-server architecture.
 
 ```text
-React Frontend (Vite, :5173)
-       |
-       | HTTP / REST (JSON) + "Authorization: Bearer <access>"
-       v
-Django REST Framework  (authentication + permissions)
-       |
-       v
-Views / Serializers    (business rules + validation)
-       |
-       v
-Django ORM             (models -> SQL)
-       |
-       v
+                         ┌─────────────────────┐
+                         │       USERS         │
+                         │ Admin / Student /   │
+                         │ Volunteer           │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │   React Frontend    │
+                         │       + Vite        │
+                         │      Vercel         │
+                         └──────────┬──────────┘
+                                    │
+                              HTTPS / REST API
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │   Django REST API   │
+                         │ Django + DRF        │
+                         │ JWT Authentication  │
+                         │ Role Permissions    │
+                         │ Business Logic      │
+                         └──────────┬──────────┘
+                                    │
+                              Django ORM
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │       MySQL         │
+                         │      Database       │
+                         └─────────────────────┘
+```
+
+---
+
+# 🔄 Application Architecture
+
+```text
+React UI
+   │
+   ▼
+React Components
+   │
+   ▼
+React Router
+   │
+   ▼
+Axios API Service
+   │
+   │ HTTP Request
+   ▼
+Django REST Framework
+   │
+   ├── Authentication
+   ├── Permissions
+   ├── Serializers
+   ├── Views / ViewSets
+   ├── Business Logic
+   └── Validation
+   │
+   ▼
+Django ORM
+   │
+   ▼
 MySQL Database
 ```
 
-Example — a student clicks **Register**:
+---
+
+# 👥 User Roles
 
 ```text
-React button -> eventService.register(id)
-  -> POST /api/events/{id}/register/  (Bearer token added by Axios)
-  -> JWTAuthentication identifies the user
-  -> IsStudentRole permission
-  -> transaction + row lock on the Event
-  -> checks: status open? deadline? duplicate? capacity?
-  -> Registration.objects.create(...)  -> INSERT in MySQL
-  -> QR PNG generated + email sent after commit
-  -> 201 JSON {"message": "Registration successful", "registration_id": "ACE-2026-00001"}
-  -> React shows the message / updates the UI
+                    ┌───────────────┐
+                    │     USER      │
+                    └───────┬───────┘
+                            │
+              ┌─────────────┼─────────────┐
+              │             │             │
+              ▼             ▼             ▼
+          ┌───────┐     ┌─────────┐   ┌───────────┐
+          │ Admin │     │ Student │   │ Volunteer │
+          └───┬───┘     └────┬────┘   └─────┬─────┘
+              │              │              │
+              ▼              ▼              ▼
+        Manage Events    Register       Attendance
+        Manage Users     View Events    QR Scanner
+        Manage Budget    View QR        Assigned Events
+        View Reports
 ```
 
-## 5. Folder structure
+---
+
+# 🔐 Authentication Architecture
+
+The project uses JWT authentication.
 
 ```text
-ACE-Event-Management/
+User
+ │
+ ▼
+Login Page
+ │
+ ▼
+POST /api/auth/login/
+ │
+ ▼
+Django Authentication
+ │
+ ▼
+Access Token + Refresh Token
+ │
+ ▼
+React Application
+ │
+ ▼
+Axios
+ │
+ │ Authorization: Bearer <access_token>
+ ▼
+Protected API
+```
+
+When the access token expires:
+
+```text
+API Request
+     │
+     ▼
+401 Unauthorized
+     │
+     ▼
+Refresh Token
+     │
+     ▼
+POST /api/auth/refresh/
+     │
+     ▼
+New Access Token
+     │
+     ▼
+Retry Original Request
+```
+
+---
+
+# 📅 Event Management Flow
+
+```text
+Admin
+ │
+ ▼
+Create Event
+ │
+ ▼
+Django REST API
+ │
+ ▼
+Validate Event Data
+ │
+ ▼
+Save Event
+ │
+ ▼
+MySQL
+ │
+ ▼
+Event Available
+ │
+ ▼
+Students View Event
+```
+
+---
+
+# 📝 Student Registration Flow
+
+```text
+Student
+   │
+   ▼
+View Events
+   │
+   ▼
+Select Event
+   │
+   ▼
+Register
+   │
+   ▼
+POST /api/events/<id>/register/
+   │
+   ▼
+Backend Validation
+   │
+   ├── Authentication
+   ├── Student Role
+   ├── Registration Deadline
+   ├── Event Capacity
+   └── Duplicate Registration
+   │
+   ▼
+Create Registration
+   │
+   ▼
+Generate Registration ID
+   │
+   ▼
+Generate QR Code
+   │
+   ▼
+Return Response
+```
+
+---
+
+# 📱 QR Code & Attendance Flow
+
+```text
+Student Registration
+        │
+        ▼
+Generate QR Code
+        │
+        ▼
+Student receives QR
+        │
+        ▼
+Event Day
+        │
+        ▼
+Volunteer scans QR
+        │
+        ▼
+Validate Registration
+        │
+        ▼
+Check Duplicate Attendance
+        │
+        ▼
+Record Check-in
+        │
+        ▼
+Attendance Saved
+```
+
+---
+
+# 💰 Budget Management Flow
+
+```text
+Event
+ │
+ ▼
+Create Event Budget
+ │
+ ▼
+Add Expenses
+ │
+ ▼
+Validate Expense
+ │
+ ├── Available Budget?
+ └── Valid Amount?
+ │
+ ▼
+Save Expense
+ │
+ ▼
+Calculate
+ │
+ ├── Total Budget
+ ├── Total Expenses
+ └── Remaining Budget
+```
+
+---
+
+# 🧩 Backend Architecture
+
+```text
+backend/
+│
+├── config/
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   ├── asgi.py
+│   ├── pagination.py
+│   └── exceptions.py
+│
+├── accounts/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   ├── urls.py
+│   └── tests.py
+│
+├── events/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   ├── urls.py
+│   └── tests.py
+│
+├── registrations/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── utils.py
+│   └── tests.py
+│
+├── attendance/
+│   ├── models.py
+│   ├── views.py
+│   └── tests.py
+│
+├── budgets/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   └── tests.py
+│
+├── dashboard/
+├── manage.py
+└── requirements.txt
+```
+
+---
+
+# ⚛️ Frontend Architecture
+
+```text
+frontend/
+│
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── layouts/
+│   ├── services/
+│   ├── context/
+│   ├── hooks/
+│   ├── routes/
+│   ├── utils/
+│   └── test/
+│
+├── package.json
+├── package-lock.json
+└── vite.config.js
+```
+
+---
+
+# 🗄️ Database Architecture
+
+The application uses MySQL through Django ORM.
+
+```text
+                    USER
+                     │
+                     ▼
+                   EVENT
+                     │
+             ┌───────┴────────┐
+             │                │
+             ▼                ▼
+       REGISTRATION        VOLUNTEER
+             │
+             ▼
+        ATTENDANCE
+
+                   EVENT
+                     │
+                     ▼
+                  BUDGET
+                     │
+                     ▼
+                  EXPENSE
+```
+
+---
+
+# 🌐 REST API Architecture
+
+```text
+React
+  │
+  │ Axios
+  ▼
+Django REST Framework
+  │
+  ├── /api/auth/
+  ├── /api/events/
+  ├── /api/registrations/
+  ├── /api/attendance/
+  ├── /api/budgets/
+  └── /api/dashboard/
+```
+
+## API Examples
+
+### Authentication
+```text
+POST /api/auth/login/
+POST /api/auth/register/
+POST /api/auth/refresh/
+GET  /api/auth/me/
+```
+
+### Events
+```text
+GET    /api/events/
+GET    /api/events/<id>/
+POST   /api/events/
+PATCH  /api/events/<id>/
+DELETE /api/events/<id>/
+```
+
+### Registration
+```text
+POST /api/events/<id>/register/
+GET  /api/registrations/
+GET  /api/registrations/<id>/
+GET  /api/registrations/<id>/qr/
+```
+
+### Attendance
+```text
+POST /api/attendance/check-in/
+GET  /api/attendance/summary/
+```
+
+---
+
+# 🛠️ Technology Stack
+
+## Frontend
+- React.js
+- Vite
+- JavaScript
+- React Router
+- Axios
+- HTML5
+- CSS
+- html5-qrcode
+
+## Backend
+- Python
+- Django
+- Django REST Framework
+- Django Filters
+- Simple JWT
+- drf-spectacular
+- Gunicorn
+- WhiteNoise
+
+## Database
+- MySQL
+- Django ORM
+
+## Development & Deployment
+- Git
+- GitHub
+- Vercel
+- Render
+
+---
+
+# 📁 Complete Project Structure
+
+```text
+Student-Event-Management-System/
+│
 ├── backend/
+│   ├── config/
+│   ├── accounts/
+│   ├── events/
+│   ├── registrations/
+│   ├── attendance/
+│   ├── budgets/
+│   ├── dashboard/
 │   ├── manage.py
-│   ├── config/            settings, urls, wsgi/asgi, error handler, pagination, test helpers
-│   ├── accounts/          custom User (role), Student/Volunteer profiles, auth endpoints, permissions, seed_data
-│   ├── events/            Event, EventVolunteer, event CRUD + volunteer assignment
-│   ├── registrations/     Registration model, register endpoint, QR + email utils
-│   ├── attendance/        QR check-in + attendance summary
-│   ├── budgets/           EventBudget, Expense, calculations
-│   ├── dashboard/         role-based statistics
-│   ├── requirements.txt  .env.example  README.md
+│   ├── requirements.txt
+│   └── .env.example
+│
 ├── frontend/
-│   └── src/
-│       ├── components/    reusable UI (Modal, StatCard, QRScanner, ...)
-│       ├── pages/         one file per screen
-│       ├── layouts/       sidebar dashboard layout
-│       ├── services/      Axios instance + API functions
-│       ├── context/       AuthContext (login state)
-│       ├── hooks/         useFetch
-│       ├── routes/        ProtectedRoute, AppRoutes
-│       ├── utils/         formatting, token storage
-│       └── test/          Vitest tests
-├── docs/                  API.md, DATABASE.md, INTERVIEW_GUIDE.md
-└── README.md  .gitignore  LICENSE
+│   ├── src/
+│   ├── package.json
+│   ├── package-lock.json
+│   └── vite.config.js
+│
+├── docs/
+├── README.md
+├── .gitignore
+└── LICENSE
 ```
 
-## 6. Database design
+---
 
-See [docs/DATABASE.md](docs/DATABASE.md) for the full diagram and the reason behind every relationship.
+# 💻 Local Setup
 
-## 7. Authentication flow (JWT)
-
-1. `POST /api/auth/login/` with email + password → server returns `access` (30 min), `refresh` (7 days) and the user.
-2. React stores them (localStorage) and Axios adds `Authorization: Bearer <access>` to every call.
-3. When the access token expires the API answers `401`; the Axios interceptor calls `/api/auth/refresh/`, saves the new
-   tokens and retries the original request. If refresh fails, the user is logged out.
-4. Logout = delete tokens on the client (JWT is stateless).
-5. Every protected view checks the role from the database user (`request.user.role`), not from anything React sends.
-
-## 8. API documentation
-
-Short list below; complete request/response examples are in [docs/API.md](docs/API.md). Interactive docs: `/api/docs/`.
-
-| Method | URL | Who |
-|---|---|---|
-| POST | `/api/auth/register/` | public (creates a student) |
-| POST | `/api/auth/login/`, `/api/auth/refresh/` | public |
-| GET | `/api/auth/me/` | any logged-in user |
-| GET | `/api/events/` · `/api/events/<id>/` | any logged-in user |
-| POST/PATCH/DELETE | `/api/events/`, `/api/events/<id>/` | admin |
-| GET | `/api/events/assigned/` | volunteer |
-| GET/POST | `/api/events/<id>/volunteers/` · DELETE `.../<volunteer_id>/` | admin |
-| POST | `/api/events/<id>/register/` | student |
-| GET | `/api/registrations/` · `/<id>/` · `/<id>/qr/` | scoped by role |
-| PATCH/DELETE | `/api/registrations/<id>/` | admin |
-| POST | `/api/attendance/check-in/` | volunteer (assigned) / admin |
-| GET | `/api/attendance/summary/` | volunteer / admin |
-| GET | `/api/users/` · GET/POST `/api/volunteers/` | admin |
-| CRUD | `/api/budgets/` · `/api/expenses/` | admin |
-| GET | `/api/dashboard/` | any role (role-specific data) |
-
-## 9. Local setup
-
-Prerequisites: Python 3.10+, Node 18+, MySQL 8 (or use SQLite for a quick try), Git.
-
-### Backend
+## Clone Repository
 
 ```bash
-git clone <repository-url>
-cd ACE-Event-Management/backend
-
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS / Linux
-source venv/bin/activate
-
-pip install -r requirements.txt
-cp .env.example .env            # Windows: copy .env.example .env   -> then edit .env
-
-# MySQL: create the database first
-#   mysql -u root -p -e "CREATE DATABASE ace_events CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-
-python manage.py makemigrations accounts events registrations budgets
-python manage.py migrate
-python manage.py seed_data
-python manage.py runserver
+git clone https://github.com/Aathibagawan/Student-Event-Management-System.git
+cd Student-Event-Management-System
 ```
 
-No MySQL yet? Set `DB_ENGINE=sqlite` in `.env` to try the app with a local `db.sqlite3` file. Use MySQL for the real project.
-
-`mysqlclient` installation: on Windows it normally installs from a prebuilt wheel. On Ubuntu run
-`sudo apt install default-libmysqlclient-dev build-essential pkg-config` first; on macOS `brew install mysql pkg-config`.
-
-### Frontend
-
-```bash
-cd ACE-Event-Management/frontend
-npm install
-cp .env.example .env
-npm run dev
-```
-
-Open http://localhost:5173. Demo logins (**local development only**, created by `seed_data`):
-
-| Role | Email | Password |
-|---|---|---|
-| Admin | `admin@ace.local` | `Demo@12345` |
-| Volunteer | `volunteer1@ace.local` | `Demo@12345` |
-| Student | `student1@ace.local` | `Demo@12345` |
-
-Django admin site: http://localhost:8000/admin/ (log in with the admin account above).
-
-## 10. Environment variables
-
-**backend/.env** (never commit; see `.env.example`)
-
-| Variable | Meaning |
-|---|---|
-| `DJANGO_SECRET_KEY` | Long random string. Required when `DJANGO_DEBUG=False` |
-| `DJANGO_DEBUG` | `True` locally, **`False` in production** |
-| `DJANGO_ALLOWED_HOSTS` | Comma-separated hostnames, e.g. `my-api.onrender.com` |
-| `DB_ENGINE` | `mysql` (default) or `sqlite` |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | MySQL connection |
-| `CORS_ALLOWED_ORIGINS` | Frontend URL(s), e.g. `https://ace-events.vercel.app` |
-| `CSRF_TRUSTED_ORIGINS` | Same frontend URL(s) (needed for the Django admin over HTTPS) |
-| `EMAIL_BACKEND` | Console backend in dev; `django.core.mail.backends.smtp.EmailBackend` in production |
-| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | SMTP settings |
-
-Generate a secret key: `python -c "import secrets; print(secrets.token_urlsafe(50))"`
-
-**frontend/.env**: `VITE_API_URL` — the backend API base, e.g. `https://my-api.onrender.com/api`.
-Vite bakes this value in at **build time**, so rebuild/redeploy after changing it.
-
-## 11. Testing
+## Backend
 
 ```bash
 cd backend
-python manage.py test                 # all apps
-python manage.py test registrations   # one app
+python -m venv venv
 ```
 
-Django creates a temporary test database. With MySQL the DB user needs permission to create databases
-(`GRANT ALL ON test_ace_events.* ...` or use `DB_ENGINE=sqlite` for quick runs).
+Windows:
 
-| Test file | What it checks |
-|---|---|
-| `accounts/tests.py` | register, role can't be self-chosen, duplicate email, login tokens, wrong password, refresh, 401/403 permissions, admin creates volunteer |
-| `events/tests.py` | admin creates event, student can't, past date rejected, deadline-after-date rejected, retrieve/filter/search, update/delete |
-| `registrations/tests.py` | register + QR image, confirmation email, duplicate (409), capacity full (409), after deadline (400), closed status (400), admin can't register, students see only their own |
-| `attendance/tests.py` | volunteer check-in sets time/user, duplicate check-in (409), unknown ID (404), unassigned volunteer (403), student (403) |
-| `budgets/tests.py` | total/remaining/utilization math, API returns calculated fields, expense over budget rejected, negative values rejected, students blocked |
+```powershell
+.env\Scripts\Activate.ps1
+```
+
+Install dependencies:
 
 ```bash
-cd frontend && npm test
+pip install -r requirements.txt
 ```
 
-Frontend: `format.test.js` (money/time/error-message helpers) and `ProtectedRoute.test.jsx` (redirects anonymous users, allows the right role, sends wrong roles back).
+Run migrations:
 
-## 12. Deployment
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
 
-Request path in production:
+Start Django:
+
+```bash
+python manage.py runserver
+```
+
+Backend:
 
 ```text
-Frontend URL (Vercel/Netlify)  ->  Backend API URL (Render)  ->  Hosted MySQL
-https://ace-events.vercel.app      https://ace-api.onrender.com   (managed MySQL host)
+http://127.0.0.1:8000/
 ```
 
-**1. Database.** Create a managed MySQL database with any provider that offers MySQL (e.g. Aiven, Railway, TiDB Cloud,
-a cloud-provider MySQL). Free tiers change often — check current offers. Copy host, port, user, password, db name.
+## Frontend
 
-**2. Backend on Render (Web Service).**
-* Root directory: `backend` · Runtime: Python
-* Build command: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
-* Start command: `gunicorn config.wsgi:application`
-* Environment variables: everything in section 10 (`DJANGO_DEBUG=False`, real `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`,
-  DB values, `CORS_ALLOWED_ORIGINS=<your frontend URL>`).
-* Create the first admin: Render shell → `python manage.py createsuperuser` (or run `seed_data` only on a demo deployment).
-* If `mysqlclient` fails to build on the host, see Troubleshooting (PyMySQL fallback).
-
-**3. Frontend on Vercel (or Netlify).**
-* Root directory: `frontend` · Framework: Vite · Build: `npm run build` · Output: `dist`
-* Environment variable: `VITE_API_URL=https://<your-backend>/api`
-* `vercel.json` / `public/_redirects` are included so page refreshes on routes like `/events/3` work.
-
-**4. Connect them.** After the frontend URL exists, put it into the backend's `CORS_ALLOWED_ORIGINS` and
-`CSRF_TRUSTED_ORIGINS` and redeploy the backend.
-
-Notes: Render's free web services sleep when idle (first request is slow). QR images are regenerated on demand from the
-registration ID, so losing the server's `media/` folder on redeploy does not break QR codes.
-
-## 13. Git workflow
+Open another terminal:
 
 ```bash
-git init
-git add .
-git commit -m "feat: add JWT authentication"
+cd frontend
+npm install
 ```
 
-Example commit messages: `feat: add event management APIs` · `feat: implement student registration` ·
-`feat: implement QR attendance` · `feat: add budget management` · `fix: prevent duplicate event registration` ·
-`docs: update deployment instructions`.
+Create `.env`:
 
-## 14. Troubleshooting
+```env
+VITE_API_URL=http://localhost:8000/api
+```
 
-| Problem | Fix |
-|---|---|
-| `pip install mysqlclient` fails | Install system libs (see Local setup). Fallback: `pip install pymysql` and add `import pymysql; pymysql.install_as_MySQLdb()` at the top of `config/__init__.py` |
-| `Access denied for user` / `Unknown database` | Check `DB_*` in `.env`; create the database first |
-| `RuntimeError: DJANGO_SECRET_KEY must be set` | Create `.env` from `.env.example` (or set `DJANGO_DEBUG=True` for local work) |
-| `no such table` / `relation does not exist` | You skipped `makemigrations` / `migrate` |
-| `django.db.migrations.exceptions.InconsistentMigrationHistory` | You ran `migrate` before `makemigrations` created `accounts`' migration (custom user). Drop the dev database, then run `makemigrations` first |
-| React shows "Cannot reach the server" | Backend not running, wrong `VITE_API_URL`, or CORS origin missing in backend `.env` |
-| Browser console CORS error | Add the exact frontend origin (no trailing slash) to `CORS_ALLOWED_ORIGINS` |
-| Login says "Invalid email or password" | Use the seeded emails; run `seed_data` again (safe to repeat) |
-| Camera scanner is blank | Allow camera permission; use `localhost` or HTTPS; use "Enter ID manually" as a fallback |
-| 400 "Registration is not open" | Event status must be `Registration Open` and the deadline in the future |
-| Static files missing in production | Run `collectstatic`; keep WhiteNoise in `MIDDLEWARE` |
-| Page refresh gives 404 on hosting | Make sure `vercel.json` or `public/_redirects` is deployed |
+Start React:
 
-## 15. Learning material
+```bash
+npm run dev
+```
 
-Read [docs/INTERVIEW_GUIDE.md](docs/INTERVIEW_GUIDE.md): concepts used, the full data-flow, 40+ interview questions with
-answers, plus a 2-minute and a 30-second project pitch.
+Frontend:
 
-## License
+```text
+http://localhost:5173/
+```
 
-MIT — see `LICENSE`.
+---
+
+# ☁️ Deployment Architecture
+
+```text
+                         INTERNET
+                            │
+                            ▼
+              ┌─────────────────────────┐
+              │        VERCEL           │
+              │    React + Vite         │
+              │      Frontend           │
+              └────────────┬────────────┘
+                           │
+                           │ HTTPS / REST API
+                           ▼
+              ┌─────────────────────────┐
+              │        RENDER           │
+              │ Django REST Framework   │
+              │ Gunicorn Backend API    │
+              └────────────┬────────────┘
+                           │
+                           │ Django ORM
+                           ▼
+              ┌─────────────────────────┐
+              │         MySQL           │
+              │        Database         │
+              └─────────────────────────┘
+```
+
+---
+
+# 🧪 Testing
+
+## Backend
+
+```bash
+cd backend
+python manage.py test
+```
+
+## Frontend
+
+```bash
+cd frontend
+npm test
+```
+
+Testing covers important functionality such as:
+
+- Authentication
+- Permissions
+- Event management
+- Registration
+- Attendance
+- Budget validation
+
+---
+
+# 🔒 Security
+
+The application implements:
+
+- JWT authentication
+- Role-based authorization
+- Protected API endpoints
+- Django password hashing
+- Environment variables
+- CORS configuration
+- CSRF trusted origins
+- Backend-side validation
+- Database constraints
+
+Sensitive information such as database passwords and Django secret keys are stored in environment variables and are not committed to GitHub.
+
+---
+
+# 📚 Concepts Demonstrated
+
+### Frontend
+- React components
+- Props
+- State
+- Context API
+- React Router
+- Forms
+- API integration
+- Axios
+- Protected routes
+- Conditional rendering
+
+### Backend
+- Python
+- Django
+- Django REST Framework
+- Models
+- Serializers
+- Views
+- URL routing
+- JWT authentication
+- Permissions
+- Django ORM
+- Database migrations
+- Business logic
+- API validation
+
+### Database
+- MySQL
+- Relational database design
+- Primary keys
+- Foreign keys
+- Database relationships
+- ORM queries
+
+### Deployment
+- Git
+- GitHub
+- Vercel
+- Render
+- Production environment variables
+- REST API deployment
+- CORS configuration
+
+---
+
+# 🎯 Project Objective
+
+The project demonstrates an end-to-end full-stack development lifecycle:
+
+```text
+Requirement
+     ↓
+Database Design
+     ↓
+Backend Development
+     ↓
+REST API Development
+     ↓
+Authentication & Authorization
+     ↓
+React Frontend
+     ↓
+Frontend-Backend Integration
+     ↓
+Testing
+     ↓
+Git & GitHub
+     ↓
+Deployment
+     ↓
+Live Application
+```
+
+---
+
+# 👨‍💻 Developer
+
+**Aathibagawan M**
+
+B.E. Computer Science and Engineering
+
+GitHub:
+https://github.com/Aathibagawan
+
+Project:
+https://github.com/Aathibagawan/Student-Event-Management-System
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
