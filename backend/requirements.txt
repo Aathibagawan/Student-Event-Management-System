@@ -1,0 +1,16 @@
+asgiref==3.12.1
+attrs==26.1.0
+Django==5.1.15
+django-cors-headers==4.9.0
+django-filter==25.1
+djangorestframework==3.17.2
+djangorestframework_simplejwt==5.5.1
+dj-database-url==2.3.0
+drf-spectacular==0.30.0
+gunicorn==26.2.0
+pillow==12.3.0
+psycopg2-binary==2.9.10
+PyJWT==2.15.1
+python-dotenv==1.2.4
+qrcode==8.2
+whitenoise==6.12.0

@@ -1,0 +1,36 @@
+# Render "Blueprint": New + > Blueprint > pick this repo. Creates the API and a PostgreSQL database.
+databases:
+  - name: ace-db
+    databaseName: ace_events
+    plan: free
+
+services:
+  - type: web
+    name: ace-events-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn config.wsgi:application
+    healthCheckPath: /api/health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ace-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS      # your Vercel URL, e.g. https://my-app.vercel.app
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS      # same URL (must include https://)
+        sync: false
+      - key: SERVE_MEDIA
+        value: "True"
+      - key: SEED_DEMO_DATA            # demo users + events. Set to False for real use.
+        value: "True"
