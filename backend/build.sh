@@ -9,3 +9,5 @@ python manage.py migrate
 if [ "${SEED_DEMO_DATA:-False}" = "True" ]; then
   python manage.py seed_data
 fi
+
+
